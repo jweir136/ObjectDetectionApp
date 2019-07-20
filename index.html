@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
+</head>
+<body>
+	<table style="width:100%;height:100%;" border='1'>
+		<tr>
+			<th style="width:50%;height:100%;">
+				<img id='img' src="{{url_for('static', filename='test_dog1.jpg')}}"/>
+			</th>
+			<th style="width:50%;height:100%;">
+				<canvas id='canvas' style="width:100%;height:100%;"></canvas>
+			</th>
+		</tr>
+	</table>
+	
+	<script>
+		let canvas = document.getElementById("canvas");
+		let ctx = canvas.getContext('2d');
+		
+		function drawImageToCanvas() {
+			let img = document.getElementById("img");
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);	
+		}
+		
+		function getImageDataObject() {
+			let imageData = ctx.createImageData(300, 300);
+			return imageData;
+		}
+		
+		function showImageData(imageDataObj) {
+			let data = canvas.toDataURL();
+			document.getElementById("img").src = data;
+		}
+		
+		function getPixelValues(imageDataObject) {
+			return tf.browser.fromPixels(imageDataObject);
+		}
+		
+		function main() {
+			console.log("drawing to canvas");
+			//drawImageToCanvas();
+			
+			console.log("showing image");
+			let obj = getImageDataObject();
+			//showImageData(obj);
+						
+			(async () => {
+				const model = await tf.loadGraphModel("{{url_for('static', filename='model.json')}}");
+				let tensor = tf.expandDims(getPixelValues(obj));
+				//console.log(tensor.shape)
+				model.execute(tensor);
+			})()
+		}
+
+		main();
+	</script>
+</body>
+</html>
